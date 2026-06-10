@@ -280,52 +280,230 @@ Firestore Root
 ```
 
 ### 9.2 Entity Relationship Diagram (ERD)
+```
+┌─────────────────────────────┐          ┌──────────────────────────────────┐
+│             USER            │          │              TASK                │
+├─────────────────────────────┤          ├──────────────────────────────────┤
+│ PK  userId        String    │          │ PK  taskId        String (UUID)  │
+│     displayName   String    │          │ FK  userId        String         │
+│     email         String    │          │     title         String         │
+│     notifyBefore24h Boolean │          │     description   String         │
+│     notifyBefore1h  Boolean │          │     dueDate       Timestamp      │
+└─────────────────────────────┘          │     category      String         │
+             │                           │     priority      String         │
+             │ 1                         │     isRecurring   Boolean        │
+             │                           │     recurrenceType String        │
+             │                           │     isCompleted   Boolean        │
+             │                           │     createdAt     Timestamp      │
+             │ N                         │     updatedAt     Timestamp      │
+             └──────────────────────────>└──────────────────────────────────┘
 
-> 📌 **PLACEHOLDER — ERD Diagram**
-> *Insert ERD diagram showing two entities:*
-> - ***User** (userId PK, displayName, email, notifyBefore24h, notifyBefore1h)*
-> - ***Task** (taskId PK, userId FK, title, description, dueDate, category, priority, isRecurring, recurrenceType, isCompleted, createdAt, updatedAt)*
-> - *Relationship: One User has many Tasks (1 to N). Draw using standard ERD notation (crow's foot or Chen notation).*
-
----
-
+Relationship: One USER has many TASKs  (1 to N)
+Foreign Key:  TASK.userId  →  USER.userId
+```
 ## 10. Flowchart / Sequence Diagram
 
 ### 10.1 User Authentication Flow
 
-> 📌 **PLACEHOLDER — Flowchart: Authentication Flow**
-> *Insert flowchart showing:*
-> *START → App Launches → Check Auth State → [If Authenticated] → Home Screen → END*
-> *→ [If Not Authenticated] → Login Screen → [User submits credentials] → Firebase Auth validates → [Success] → Home Screen → END*
-> *→ [Failure] → Show error SnackBar → Return to Login Screen*
-
----
+```
+START
+  │
+  ▼
+┌─────────────────┐
+│   App launches  │
+└─────────────────┘
+  │
+  ▼
+┌─────────────────────┐
+│  Check auth state   │
+└─────────────────────┘
+  │
+  ├── Authenticated ──────────────────────────────┐
+  │                                               │
+  ▼                                               │
+┌─────────────────────┐                           │
+│    Login screen     │                           │
+└─────────────────────┘                           │
+  │                                               │
+  ▼                                               ▼
+┌─────────────────────────┐             ┌─────────────────┐
+│ User submits credentials│             │   Home screen   │
+└─────────────────────────┘             └─────────────────┘
+  │                                               │
+  ▼                                               ▼
+┌──────────────────────────┐                    END
+│ Firebase Auth validates  │
+└──────────────────────────┘
+  │
+  ├── Success ────────────────────────────────────┐
+  │                                               │
+  ▼                                               ▼
+┌─────────────────────┐                 ┌─────────────────┐
+│  Show error SnackBar│                 │   Home screen   │
+└─────────────────────┘                 └─────────────────┘
+  │                                               │
+  └──> Return to Login screen                    END
+```
 
 ### 10.2 Task Creation & Notification Scheduling Flow
 
-> 📌 **PLACEHOLDER — Flowchart: Add Task & Notification Flow**
-> *Insert flowchart showing:*
-> *User taps FAB → Add Task Screen → User fills form → Validates inputs → [Invalid] → Show field errors → [Valid] → Save to Firestore → Check isRecurring → [Yes] → Store recurrence config → Schedule Local Notifications (flutter_local_notifications) for due time → FCM token registered → END*
-> *→ [No] → Schedule notification only → END*
-
----
+```
+START
+  │
+  ▼
+┌─────────────────┐
+│  User taps FAB  │
+└─────────────────┘
+  │
+  ▼
+┌─────────────────────┐
+│   Add Task screen   │
+└─────────────────────┘
+  │
+  ▼
+┌─────────────────────┐
+│  User fills form    │
+└─────────────────────┘
+  │
+  ▼
+┌─────────────────────┐
+│  Validates inputs   │
+└─────────────────────┘
+  │
+  ├── Invalid ────────────────────┐
+  │                               │
+  ▼                               ▼
+┌─────────────────────┐  ┌──────────────────────┐
+│  Save to Firestore  │  │  Show field errors   │
+└─────────────────────┘  └──────────────────────┘
+  │                               │
+  │                               └──> Return to form
+  ▼
+┌─────────────────────┐
+│  Check isRecurring  │
+└─────────────────────┘
+  │
+  ├── Yes ────────────────────────────────────────────────────┐
+  │                                                           │
+  ▼                                                           ▼
+┌──────────────────────────┐                ┌────────────────────────────────┐
+│  Schedule notification   │                │   Store recurrence config      │
+│  only (flutter_local_    │                └────────────────────────────────┘
+│  notifications)          │                                 │
+└──────────────────────────┘                                 ▼
+  │                                         ┌────────────────────────────────┐
+  ▼                                         │  Schedule local notifications  │
+ END                                        │  (flutter_local_notifications) │
+                                            └────────────────────────────────┘
+                                                             │
+                                                             ▼
+                                            ┌────────────────────────────────┐
+                                            │     FCM token registered       │
+                                            └────────────────────────────────┘
+                                                             │
+                                                             ▼
+                                                            END
+```
 
 ### 10.3 App Navigation Sequence Diagram
 
-> 📌 **PLACEHOLDER — Sequence Diagram: Full Navigation Flow**
-> *Insert sequence diagram with actors: User, App (Flutter), Firebase Auth, Firestore, Notification Service.*
-> *Show the sequence: User opens app → App checks Auth → Firebase returns auth state → If logged in: App fetches tasks from Firestore → Tasks rendered on HomeScreen → User adds task → App writes to Firestore → App schedules notification → Notification Service confirms → App shows success message.*
-
----
+```
+User          App (Flutter)       Firebase Auth      Firestore       Notification Service
+  │                 │                   │                 │                   │
+  │  Opens app      │                   │                 │                   │
+  │────────────────>│                   │                 │                   │
+  │                 │  Check auth state │                 │                   │
+  │                 │──────────────────>│                 │                   │
+  │                 │  Return auth state│                 │                   │
+  │                 │<──────────────────│                 │                   │
+  │                 │                   │                 │                   │
+  │                 │  [If logged in]   │                 │                   │
+  │                 │  Fetch tasks      │                 │                   │
+  │                 │─────────────────────────────────── >│                   │
+  │                 │  Return tasks     │                 │                   │
+  │                 │<─────────────────────────────────── │                   │
+  │                 │                   │                 │                   │
+  │  Tasks rendered │                   │                 │                   │
+  │  on HomeScreen  │                   │                 │                   │
+  │<────────────────│                   │                 │                   │
+  │                 │                   │                 │                   │
+  │  Adds new task  │                   │                 │                   │
+  │────────────────>│                   │                 │                   │
+  │                 │  Write task       │                 │                   │
+  │                 │─────────────────────────────────── >│                   │
+  │                 │  Write confirmed  │                 │                   │
+  │                 │<─────────────────────────────────── │                   │
+  │                 │                   │                 │                   │
+  │                 │  Schedule notification              │                   │
+  │                 │─────────────────────────────────────────────────────── >│
+  │                 │  Notification confirmed             │                   │
+  │                 │<─────────────────────────────────────────────────────── │
+  │                 │                   │                 │                   │
+  │ Success message │                   │                 │                   │
+  │<────────────────│                   │                 │                   │
+  │                 │                   │                 │                   │
+```
 
 ### 10.4 Recurring Deadline Logic Flow
 
-> 📌 **PLACEHOLDER — Flowchart: Recurring Task Completion Flow**
-> *Insert flowchart showing:*
-> *User marks task as complete → App checks isRecurring → [No] → isCompleted = true → Firestore updated → END*
-> *→ [Yes] → Calculate next due date based on recurrenceType (daily +1 day / weekly +7 days / monthly +1 month) → Create new task document in Firestore with new dueDate → Schedule new notification → Mark original as completed → END*
+```
+START
+  │
+  ▼
+┌──────────────────────────┐
+│  User marks task as done │
+└──────────────────────────┘
+  │
+  ▼
+┌──────────────────────────┐
+│   App checks isRecurring │
+└──────────────────────────┘
+  │
+  ├── No ─────────────────────────────┐
+  │                                   │
+  │                                   ▼
+  │                       ┌───────────────────────┐
+  │                       │   isCompleted = true  │
+  │                       └───────────────────────┘
+  │                                   │
+  │                                   ▼
+  │                       ┌───────────────────────┐
+  │                       │   Firestore updated   │
+  │                       └───────────────────────┘
+  │                                   │
+  │                                   ▼
+  │                                  END
+  │
+  └── Yes ────────────────────────────────────────────────────┐
+                                                              │
+                                                              ▼
+                                             ┌────────────────────────────────────┐
+                                             │    Calculate next due date         │
+                                             │  daily      →  +1 day              │
+                                             │  weekly     →  +7 days             │
+                                             │  monthly    →  +1 month            │
+                                             └────────────────────────────────────┘
+                                                              │
+                                                              ▼
+                                             ┌────────────────────────────────────┐
+                                             │  Create new task doc in Firestore  │
+                                             │  with new dueDate                  │
+                                             └────────────────────────────────────┘
+                                                              │
+                                                              ▼
+                                             ┌────────────────────────────────────┐
+                                             │     Schedule new notification      │
+                                             └────────────────────────────────────┘
+                                                              │
+                                                              ▼
+                                             ┌────────────────────────────────────┐
+                                             │   Mark original task as completed  │
+                                             └────────────────────────────────────┘
+                                                              │
+                                                              ▼
+                                                             END
+```
 
----
 
 ## 11. References
 
